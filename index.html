@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>톰슨 공정 문제 접수</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+            max-width: 560px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            padding: 32px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .header p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        .form-body {
+            padding: 32px;
+        }
+        .field {
+            margin-bottom: 20px;
+        }
+        .field label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        .field label .required {
+            color: #e74c3c;
+            margin-left: 2px;
+        }
+        .field input, .field textarea, .field select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e1e5eb;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            outline: none;
+            background: #fff;
+        }
+        .field input:focus, .field textarea:focus, .field select:focus {
+            border-color: #3498db;
+        }
+        .field textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .field select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' fill='none' stroke-width='2'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+        .priority-group {
+            display: flex;
+            gap: 12px;
+        }
+        .priority-option {
+            flex: 1;
+            position: relative;
+        }
+        .priority-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .priority-option label.priority-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            border: 2px solid #e1e5eb;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .priority-option input[type="radio"]:checked + label.priority-label.normal {
+            border-color: #3498db;
+            background: #ebf5fb;
+            color: #2980b9;
+        }
+        .priority-option input[type="radio"]:checked + label.priority-label.high {
+            border-color: #e74c3c;
+            background: #fdedec;
+            color: #c0392b;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 8px;
+        }
+        .submit-btn:hover { opacity: 0.9; }
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .result {
+            display: none;
+            text-align: center;
+            padding: 40px 32px;
+        }
+        .result .icon { font-size: 48px; margin-bottom: 16px; }
+        .result.success h2 { color: #27ae60; margin-bottom: 12px; }
+        .result.error h2 { color: #e74c3c; margin-bottom: 12px; }
+        .result p { color: #666; font-size: 14px; line-height: 1.6; }
+        .result-detail {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 16px;
+            text-align: left;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.8;
+        }
+        .result-detail .label {
+            font-weight: 600;
+            color: #555;
+        }
+        .result-detail .urgent-badge {
+            display: inline-block;
+            background: #e74c3c;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .retry-btn {
+            margin-top: 20px;
+            padding: 10px 24px;
+            background: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .retry-btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>톰슨 공정 문제 접수</h1>
+            <p>톰슨 작업 중 발생한 문제를 접수해주세요</p>
+        </div>
+
+        <form id="issueForm" class="form-body">
+            <div class="field">
+                <label>보고자 <span class="required">*</span></label>
+                <input type="text" name="reporter" required placeholder="이름을 입력해주세요">
+            </div>
+
+            <div class="field">
+                <label>호기 <span class="required">*</span></label>
+                <select name="line" required>
+                    <option value="" disabled selected>호기를 선택해주세요</option>
+                    <option value="1호기">1호기</option>
+                    <option value="2호기">2호기</option>
+                    <option value="3호기">3호기</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>문제 유형 <span class="required">*</span></label>
+                <select name="type" required>
+                    <option value="" disabled selected>문제 유형을 선택해주세요</option>
+                    <option value="manila">마닐라 문제</option>
+                    <option value="corrugated">골판지 문제</option>
+                    <option value="die">목형 문제</option>
+                    <option value="etc">기타 문제</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>긴급도 <span class="required">*</span></label>
+                <div class="priority-group">
+                    <div class="priority-option">
+                        <input type="radio" name="priority" id="pri_normal" value="normal" checked>
+                        <label for="pri_normal" class="priority-label normal">일반</label>
+                    </div>
+                    <div class="priority-option">
+                        <input type="radio" name="priority" id="pri_high" value="high">
+                        <label for="pri_high" class="priority-label high">긴급</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>증상 설명 <span class="required">*</span></label>
+                <textarea name="symptom" required placeholder="어떤 증상이 발생했는지 구체적으로 적어주세요"></textarea>
+            </div>
+
+            <div class="field">
+                <label>생산 제품명</label>
+                <input type="text" name="product" placeholder="현재 생산 중인 제품명 (선택)">
+            </div>
+
+            <button type="submit" class="submit-btn">문제 접수하기</button>
+        </form>
+
+        <div id="successResult" class="result success">
+            <div class="icon">&#10004;</div>
+            <h2>접수 완료!</h2>
+            <p>문제가 정상적으로 접수되었습니다.</p>
+            <div id="resultDetail" class="result-detail"></div>
+            <button class="retry-btn" onclick="resetForm()">새 문제 접수</button>
+        </div>
+
+        <div id="errorResult" class="result error">
+            <div class="icon">&#10008;</div>
+            <h2>접수 실패</h2>
+            <p id="errorMsg">잠시 후 다시 시도해주세요.</p>
+            <button class="retry-btn" onclick="resetForm()">다시 시도</button>
+        </div>
+    </div>
+
+    <script>
+        const WEBHOOK_URL = 'https://mgself414.app.n8n.cloud/webhook/thomson-issue';
+
+        document.getElementById('issueForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('.submit-btn');
+            btn.disabled = true;
+            btn.textContent = '접수 중...';
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const res = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+
+                if (res.ok) {
+                    e.target.style.display = 'none';
+
+                    let detail = '';
+                    detail += '<span class="label">분류:</span> ' + (result.category || '-') + '<br>';
+                    detail += '<span class="label">조치 안내:</span> ' + (result.action || '-') + '<br>';
+                    detail += '<span class="label">보고자:</span> ' + (result.reporter || '-') + '<br>';
+                    detail += '<span class="label">호기:</span> ' + (result.line || '-') + '<br>';
+                    if (result.urgent) {
+                        detail += '<br><span class="urgent-badge">' + (result.urgentMessage || '긴급') + '</span>';
+                    }
+                    document.getElementById('resultDetail').innerHTML = detail;
+                    document.getElementById('successResult').style.display = 'block';
+                } else {
+                    e.target.style.display = 'none';
+                    document.getElementById('errorMsg').textContent =
+                        result.message || '필수 항목을 모두 입력해주세요.';
+                    document.getElementById('errorResult').style.display = 'block';
+                }
+            } catch (err) {
+                e.target.style.display = 'none';
+                document.getElementById('errorMsg').textContent = '서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.';
+                document.getElementById('errorResult').style.display = 'block';
+            }
+        });
+
+        function resetForm() {
+            const form = document.getElementById('issueForm');
+            form.reset();
+            form.style.display = 'block';
+            form.querySelector('.submit-btn').disabled = false;
+            form.querySelector('.submit-btn').textContent = '문제 접수하기';
+            document.getElementById('successResult').style.display = 'none';
+            document.getElementById('errorResult').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
